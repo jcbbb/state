@@ -1,20 +1,20 @@
 let current
-let effect = (fn) => {
+export function effect(fn) {
   current = fn;
   fn();
   current = fn;
 };
 
-let reactive = (initial) => {
+export function reactive(initial) {
   let val = initial;
   let subscribers = new Set();
 
-  let getter = (modfn = (val) => val) => {
+  function getter(modfn = (val) => val) {
     if (current && !subscribers.has(current)) subscribers.add(current);
     return modfn(val);
   };
 
-  let setter = (new_val) => {
+  function setter(new_val) {
     if (typeof new_val === "function") val = new_val(val);
     else val = new_val;
     subscribers.forEach(f => f());
