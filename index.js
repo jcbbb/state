@@ -1,8 +1,8 @@
-let current
+let current = null;
 export function effect(fn) {
   current = fn;
   fn();
-  current = fn;
+  current = null;
 };
 
 export function reactive(initial) {
