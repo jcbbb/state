@@ -5,20 +5,48 @@ export function effect(fn) {
   current = null;
 };
 
-export function reactive(initial) {
-  let val = initial;
-  let subscribers = new Set();
+function is_equal(a, b) {
+  return (a === null || typeof a !== "object") && Object.is(a, b);
+}
 
-  function getter(modfn = (val) => val) {
-    if (current && !subscribers.has(current)) subscribers.add(current);
-    return modfn(val);
-  };
+// Source: https://github.com/angular/angular/blob/6145cc1c0a54eaaf58539585130cd8dffa6ef892/packages/core/src/signals/src/signal.ts
+class SignalNode {
+  constructor(value) {
+    this.subscribers = new Set()
+    this.value = value;
+  }
 
-  function setter(new_val) {
-    if (typeof new_val === "function") val = new_val(val);
-    else val = new_val;
-    subscribers.forEach(f => f());
-  };
+  set(new_val) {
+    if (!is_equal(this.value, new_val)) {
+      this.value = new_val;
+      this.subscribers.forEach(fn => fn());
+    }
+  }
 
-  return [getter, setter];
-};
+  update(update_fn) {
+    this.set(update_fn(this.value));
+  }
+
+  mutate(mutate_fn) {
+    mutate_fn(this.value);
+    this.subscribers.forEach(fn => fn());
+  }
+
+  signal() {
+    if (current && !this.subscribers.has(current)) this.subscribers.add(current);
+    return this.value;
+  }
+}
+
+function create_signal_fn(node) {
+  return Object.assign(node.signal.bind(node), {
+    set: node.set.bind(node),
+    update: node.update.bind(node),
+    mutate: node.mutate.bind(node)
+  });
+}
+
+export function signal(initial) {
+  let node = new SignalNode(initial);
+  return create_signal_fn(node);
+}
