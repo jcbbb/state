@@ -9,7 +9,7 @@ function is_equal(a, b) {
 // Source: https://github.com/angular/angular/blob/6145cc1c0a54eaaf58539585130cd8dffa6ef892/packages/core/src/signals/src/signal.ts
 class SignalNode {
   constructor(value) {
-    this.subscribers = new Set()
+    this.subscribers = new Set();
     this.value = value;
   }
 
@@ -42,7 +42,8 @@ function create_signal_fn(node) {
   return Object.assign(signal_fn, {
     set: node.set.bind(node),
     update: node.update.bind(node),
-    mutate: node.mutate.bind(node)
+    mutate: node.mutate.bind(node),
+    value: node.value
   });
 }
 
