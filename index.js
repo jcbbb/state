@@ -1,9 +1,6 @@
+const SIGNAL = Symbol("SIGNAL");
+
 let current = null;
-export function effect(fn) {
-  current = fn;
-  fn();
-  current = null;
-};
 
 function is_equal(a, b) {
   return (a === null || typeof a !== "object") && Object.is(a, b);
@@ -39,14 +36,27 @@ class SignalNode {
 }
 
 function create_signal_fn(node) {
-  return Object.assign(node.signal.bind(node), {
+  let signal_fn = node.signal.bind(node);
+  signal_fn[SIGNAL] = node;
+
+  return Object.assign(signal_fn, {
     set: node.set.bind(node),
     update: node.update.bind(node),
     mutate: node.mutate.bind(node)
   });
 }
 
+export function effect(fn) {
+  current = fn;
+  fn();
+  current = null;
+};
+
 export function signal(initial) {
   let node = new SignalNode(initial);
   return create_signal_fn(node);
+}
+
+export function is_signal(value) {
+  return typeof value === "function" && value[SIGNAL] !== undefined;
 }
