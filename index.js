@@ -55,7 +55,18 @@ export function effect(fn) {
 
 export function signal(initial) {
   let node = new SignalNode(initial);
-  return create_signal_fn(node);
+  let signal_fn = create_signal_fn(node);
+
+  if (typeof initial === "object") {
+    let entries = Object.entries(initial);
+    for (let [key, value] of entries) {
+      if (is_signal(value)) {
+        signal_fn[key] = value;
+      }
+    }
+  }
+
+  return signal_fn;
 }
 
 export function is_signal(value) {
