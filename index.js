@@ -37,7 +37,7 @@ class SignalNode {
 
 function create_signal_fn(node) {
   let signal_fn = node.signal.bind(node);
-  signal_fn[SIGNAL] = node;
+  signal_fn[SIGNAL] = true;
 
   return Object.assign(signal_fn, {
     set: node.set.bind(node),
@@ -70,5 +70,5 @@ export function signal(initial) {
 }
 
 export function is_signal(value) {
-  return typeof value === "function" && value[SIGNAL] !== undefined;
+  return typeof value === "function" && value[SIGNAL];
 }
